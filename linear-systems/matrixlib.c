@@ -21,7 +21,7 @@
 #include "common.h"
 
 int invert_matrix(double *matrix, double *result, int order) {
-    double s, norm1, norm2_square;
+    double s, norm1, norm2_square, tmp;
 
     // Generate the identity matrix
 
@@ -84,18 +84,22 @@ int invert_matrix(double *matrix, double *result, int order) {
     // We know that the matrix is inversible at the moment
     // Note: no action is required on matrix
 
+
     for(int i = order - 1; i >= 0; i--) {
         // Divide i-th row of result by matrix[i, i]
+
+        s = matrix[COORD(i, i, order)];
         for(int j = 0; j < order; j++) {
-            result[COORD(j, i, order)] /= matrix[COORD(i, i, order)];
+            result[COORD(j, i, order)] /= s;
         }
 
         // Substract i-th row of result multiplied by matrix[j, i] from
         // j-th row of result for j = 0, ..., i - 1
-        for(int j = i - 1; j >= 0; j--) {
-            for (int k = 0; k < order; k++) {
-                result[COORD(k, j, order)] -= result[COORD(k, i, order)] *
-                    matrix[COORD(i, j, order)];
+        // But do it in the column-first order
+        for(int j = 0; j < order; j++) {
+            tmp = result[COORD(j, i, order)];
+            for(int k = 0; k < i; k++) {
+                result[COORD(j, k, order)] -= tmp * matrix[COORD(i, k, order)];
             }
         }
     }

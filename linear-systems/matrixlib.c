@@ -88,22 +88,6 @@ int invert_matrix(double *matrix, double *result, int order) {
     // We know that the matrix is inversible at the moment
     // Note: no action is required on matrix
 
-//    for(int i = order - 1; i >= 0; i--) {
-//        // Divide i-th row of result by matrix[i, i]
-//        for(int j = 0; j < order; j++) {
-//            result[COORD(i, j, order)] /= matrix[COORD(i, i, order)];
-//        }
-//
-//        // Substract i-th row of result multiplied by matrix[j, i] from
-//        // j-th row of result for j = 0, ..., i - 1
-//        for(int j = i - 1; j >= 0; j--) {
-//            for (int k = 0; k < order; k++) {
-//                result[COORD(j, k, order)] -= result[COORD(i, k, order)] *
-//                    matrix[COORD(j, i, order)];
-//            }
-//        }
-//    }
-
     for(int i = 0; i < order; i++) {
         for(int j = order - 1; j >= 0; j--) {
             s = result[COORD(j, i, order)];

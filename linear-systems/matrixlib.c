@@ -49,16 +49,19 @@ int invert_matrix(double *matrix, double *result, int order) {
         matrix[COORD(i, i, order)] -= norm1;
         norm2_square = SQUARE(matrix[COORD(i, i, order)]) + s;
 
+	norm2_square = 2.0 / norm2_square;
+
         // Vector of reflection is ready, now we need to operate on matrices
 
         for(int j = i + 1; j < order; j++) {
             s = 0.0;
             for(int k = i; k < order; k++) {
                 s += matrix[COORD(k, i, order)] * matrix[COORD(k, j, order)];
-            }
+            } 
+
+	    s *= norm2_square;
             for(int k = i; k < order; k++) {
-                matrix[COORD(k, j, order)] -= 2 * s * 
-                    matrix[COORD(k, i, order)] / norm2_square;
+                matrix[COORD(k, j, order)] -= s * matrix[COORD(k, i, order)];
             }
         }
 
@@ -67,9 +70,10 @@ int invert_matrix(double *matrix, double *result, int order) {
             for(int k = i; k < order; k++) {
                 s += matrix[COORD(k, i, order)] * result[COORD(k, j, order)];
             }
+
+	    s *= norm2_square;
             for(int k = i; k < order; k++) {
-                result[COORD(k, j, order)] -= 2 * s * 
-                    matrix[COORD(k, i, order)] / norm2_square;
+                result[COORD(k, j, order)] -= s * matrix[COORD(k, i, order)];
             }
         }
 
@@ -84,21 +88,31 @@ int invert_matrix(double *matrix, double *result, int order) {
     // We know that the matrix is inversible at the moment
     // Note: no action is required on matrix
 
-    for(int i = order - 1; i >= 0; i--) {
-        // Divide i-th row of result by matrix[i, i]
-        for(int j = 0; j < order; j++) {
-            result[COORD(i, j, order)] /= matrix[COORD(i, i, order)];
-        }
+//    for(int i = order - 1; i >= 0; i--) {
+//        // Divide i-th row of result by matrix[i, i]
+//        for(int j = 0; j < order; j++) {
+//            result[COORD(i, j, order)] /= matrix[COORD(i, i, order)];
+//        }
+//
+//        // Substract i-th row of result multiplied by matrix[j, i] from
+//        // j-th row of result for j = 0, ..., i - 1
+//        for(int j = i - 1; j >= 0; j--) {
+//            for (int k = 0; k < order; k++) {
+//                result[COORD(j, k, order)] -= result[COORD(i, k, order)] *
+//                    matrix[COORD(j, i, order)];
+//            }
+//        }
+//    }
 
-        // Substract i-th row of result multiplied by matrix[j, i] from
-        // j-th row of result for j = 0, ..., i - 1
-        for(int j = i - 1; j >= 0; j--) {
-            for (int k = 0; k < order; k++) {
-                result[COORD(j, k, order)] -= result[COORD(i, k, order)] *
-                    matrix[COORD(j, i, order)];
+    for(int i = 0; i < order; i++) {
+        for(int j = order - 1; j >= 0; j--) {
+            s = result[COORD(j, i, order)];
+            for(int k = j + 1; k < order; k++) {
+                s -= matrix[COORD(j, k, order)] * result[COORD(k, i, order)];
             }
+            result[COORD(j, i, order)] = s / matrix[COORD(j, j, order)];
         }
-    }
+    }    
 
     // And... here we go
     return 0;

@@ -49,7 +49,7 @@ int invert_matrix(double *matrix, double *result, int order) {
         matrix[COORD(i, i, order)] -= norm1;
         norm2_square = SQUARE(matrix[COORD(i, i, order)]) + s;
 
-	norm2_square = 2.0 / norm2_square;
+        norm2_square = 2.0 / norm2_square;
 
         // Vector of reflection is ready, now we need to operate on matrices
 
@@ -59,7 +59,7 @@ int invert_matrix(double *matrix, double *result, int order) {
                 s += matrix[COORD(k, i, order)] * matrix[COORD(k, j, order)];
             } 
 
-	    s *= norm2_square;
+            s *= norm2_square;
             for(int k = i; k < order; k++) {
                 matrix[COORD(k, j, order)] -= s * matrix[COORD(k, i, order)];
             }
@@ -71,7 +71,7 @@ int invert_matrix(double *matrix, double *result, int order) {
                 s += matrix[COORD(k, i, order)] * result[COORD(k, j, order)];
             }
 
-	    s *= norm2_square;
+            s *= norm2_square;
             for(int k = i; k < order; k++) {
                 result[COORD(k, j, order)] -= s * matrix[COORD(k, i, order)];
             }

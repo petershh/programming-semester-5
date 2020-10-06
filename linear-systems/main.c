@@ -22,7 +22,7 @@
 #include "matrixlib.h"
 
 int main(int argc, char **argv) {
-    int n, m, k;
+    int n, m, k, result;
     double *matrix, *inverse;
     clock_t begin, end;
     int exit_code = 0;
@@ -78,12 +78,14 @@ int main(int argc, char **argv) {
     printf("\n");
 
     begin = clock();
-    if(invert_matrix(matrix, inverse, n)) {
+    result = invert_matrix(matrix, inverse, n);
+    end = clock();
+
+    if(result) {
         fprintf(stderr, "ERROR: matrix is not invertible\n");
         exit_code = 5;
         goto free_inverse;
     }
-    end = clock();
 
     printf("Inverted matrix:\n");
     print_matrix(inverse, n, n, m);

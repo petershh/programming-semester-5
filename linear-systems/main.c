@@ -31,7 +31,6 @@ int main(int argc, char **argv) {
         exit_code = 1;
         goto final;
     }
-    // TODO check boundaries
     if(sscanf(argv[1], "%d", &n) != 1) {
         exit_code = 1;
         goto final;
@@ -44,7 +43,7 @@ int main(int argc, char **argv) {
         exit_code = 1;
         goto final;
     }
-    if(k < 0 || k > 4) {
+    if(k < 0 || k > 4 || n < 1 || m < 1) {
         exit_code = 1;
         goto final;
     }

@@ -24,4 +24,3 @@ a.out: main.o matrixio.o matrixlib.o common.o
 
 clean:
 	rm -f *.o a.out
-

@@ -33,7 +33,7 @@ int invert_matrix(double *matrix, double *result, int order) {
     for(int i = 0; i < order; i++) {
         s = 0.0;
         for(int j = i + 1; j < order; j++){
-            s += SQUARE(matrix[COORD(j, i, order)]);
+            s += SQUARE(matrix[COORD(i, j, order)]);
         }
 
         norm1 = sqrt(SQUARE(matrix[COORD(i, i, order)]) + s);
@@ -56,31 +56,31 @@ int invert_matrix(double *matrix, double *result, int order) {
         for(int j = i + 1; j < order; j++) {
             s = 0.0;
             for(int k = i; k < order; k++) {
-                s += matrix[COORD(k, i, order)] * matrix[COORD(k, j, order)];
-            } 
+                s += matrix[COORD(i, k, order)] * matrix[COORD(j, k, order)];
+            }
 
             s *= norm2_square;
             for(int k = i; k < order; k++) {
-                matrix[COORD(k, j, order)] -= s * matrix[COORD(k, i, order)];
+                matrix[COORD(j, k, order)] -= s * matrix[COORD(i, k, order)];
             }
         }
 
         for(int j = 0; j < order; j++) {
             s = 0.0;
             for(int k = i; k < order; k++) {
-                s += matrix[COORD(k, i, order)] * result[COORD(k, j, order)];
+                s += matrix[COORD(i, k, order)] * result[COORD(j, k, order)];
             }
 
             s *= norm2_square;
             for(int k = i; k < order; k++) {
-                result[COORD(k, j, order)] -= s * matrix[COORD(k, i, order)];
+                result[COORD(j, k, order)] -= s * matrix[COORD(i, k, order)];
             }
         }
 
         // Finalize: set the i-th subcolumn of matrix
         matrix[COORD(i, i, order)] = norm1;
         for(int j = i + 1; j < order; j++) {
-            matrix[COORD(j, i, order)] = 0.0;
+            matrix[COORD(i, j, order)] = 0.0;
         }
     }
 
@@ -90,11 +90,11 @@ int invert_matrix(double *matrix, double *result, int order) {
 
     for(int i = 0; i < order; i++) {
         for(int j = order - 1; j >= 0; j--) {
-            s = result[COORD(j, i, order)];
+            s = result[COORD(i, j, order)];
             for(int k = j + 1; k < order; k++) {
-                s -= matrix[COORD(j, k, order)] * result[COORD(k, i, order)];
+                s -= matrix[COORD(k, j, order)] * result[COORD(i, k, order)];
             }
-            result[COORD(j, i, order)] = s / matrix[COORD(j, j, order)];
+            result[COORD(i, j, order)] = s / matrix[COORD(j, j, order)];
         }
     }    
 
@@ -110,8 +110,8 @@ double discrepancy(double *matrix, double *result, int order) {
         for(int j = 0; j < order; j++) {
             product_elem = 0.0;
             for(int k = 0; k < order; k++) {
-                product_elem += matrix[COORD(i, k, order)] *
-                    result[COORD(k, j, order)];
+                product_elem += matrix[COORD(k, i, order)] *
+                    result[COORD(j, k, order)];
             }
 
             norm_square += SQUARE(product_elem - (double)(i == j));

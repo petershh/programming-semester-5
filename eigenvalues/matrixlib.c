@@ -32,18 +32,19 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
     double *main_diag = matrix;
     double *lower_diag = matrix + order;
 
-    memset(values, 0, order);
+    memset(values, 0, order * sizeof(int));
     
     // Cast to three-diagonal type
     for(int i = 0; i < order - 2; i++) {
         // Working with vector (matrix[i, i + 1], ..., matrix[i, order])
         for(int j = i + 2; j < order; j++) {
+            if(fabs(matrix[COORD(i, j, order)]) < 1e-16) {
+                continue;
+            }
+
             // Prepare matrix of rotation T = T(i + 1, j)
             temp1 = sqrt(SQUARE(matrix[COORD(i + 1, i, order)]) +
                 SQUARE(matrix[COORD(i, j, order)]));
-            if(temp1 < 1e-16 || matrix[COORD(i, j, order)] < 1e-16) {
-                continue;
-            }
             temp2 = 1 / temp1;
             cos_phi = matrix[COORD(i + 1, i, order)] * temp2;
             sin_phi = -matrix[COORD(i, j, order)] * temp2;
@@ -68,9 +69,10 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
                 matrix[COORD(i + 1, k, order)] = temp1;
             }
 
+
             // "Multiply" matrix by T* from right
             // As stated in lemma 14.2.1 of The Book, we have only to
-            // change four elements
+            // compute four elements, others can be relocated
             temp1 = 
                 matrix[COORD(i + 1, i + 1, order)] * cos_phi-
                 matrix[COORD(i + 1, j, order)] * sin_phi;
@@ -83,11 +85,25 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
             matrix[COORD(i + 1, i + 1, order)] = temp1;
             matrix[COORD(i + 1, j, order)] = temp2;
             matrix[COORD(j, i + 1, order)] = temp2;
+
+			for(int k = i + 2; k < j; k++) {
+				matrix[COORD(k, i + 1, order)] =
+					matrix[COORD(i + 1, k, order)];
+				matrix[COORD(k, j, order)] =
+					matrix[COORD(j, k, order)];
+			}
+
+			for(int k = j + 1; k < order; k++) {
+				matrix[COORD(k, i + 1, order)] =
+					matrix[COORD(i + 1, k, order)];
+				matrix[COORD(k, j, order)] =
+					matrix[COORD(j, k, order)];
+			}
         }
     }
 
     // relocate elements for easier code and speed
-    for(int i = 0; i < order - 1; i++) {
+    for(int i = 1; i < order - 1; i++) {
         main_diag[i] = matrix[COORD(i, i, order)];
         lower_diag[i] = matrix[COORD(i + 1, i, order)];
     }
@@ -97,7 +113,7 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
     // Obtain eigenvalues
     for(int i = order - 1; i > 1; i--) {
         while(fabs(lower_diag[i - 1]) >= eps * norm) {
-            // temp1 = main_diag[i];  // Shift
+            temp1 = main_diag[i];  // Shift
             for(int j = 0; j <= i; j++) {
                 main_diag[j] -= temp1;
             }
@@ -157,7 +173,6 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
             }
 
             // Last iteration
-            temp2 = main_diag[i - 1];
             main_diag[i - 1] = main_diag[i - 1] * cos_phi1 - 
                 lower_diag[i] * sin_phi1;
             
@@ -165,7 +180,7 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
             main_diag[i] = main_diag[i] * cos_phi1;
 
             // Shift back
-            for(int j = 0; j < order; j++) {
+            for(int j = 0; j <= i; j++) {
                 main_diag[j] += temp1;
             }
         }

@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     int exit_code = 0;
     char *filename = NULL;
 
-    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW);
+    //feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW);
 
     if((argc < 5) || (argc > 6)) {
         exit_code = 1;

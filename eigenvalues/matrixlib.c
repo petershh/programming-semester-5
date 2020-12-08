@@ -121,45 +121,56 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
             //printf("%lf", lower_diag[i - 1]);
 
             // QR decomposition (and computation of RQ at the same time)
-            temp2 = sqrt(SQUARE(main_diag[0]) +
-                SQUARE(lower_diag[0]));
-            temp3 = 1 / temp2;
+			if(fabs(lower_diag[0]) >= 1e-16) { 
+				temp2 = sqrt(SQUARE(main_diag[0]) +
+					SQUARE(lower_diag[0]));
+				temp3 = 1 / temp2;
 
-            cos_phi = main_diag[0] * temp3;
-            sin_phi = -lower_diag[0] * temp3;
+				cos_phi = main_diag[0] * temp3;
+				sin_phi = -lower_diag[0] * temp3;
 
-            main_diag[0] = temp2;
+				main_diag[0] = temp2;
 
-            temp4 = lower_diag[0] * cos_phi -
-                main_diag[1] * sin_phi; // 0-th elem of upper diag
-            main_diag[1] = lower_diag[0] * sin_phi +
-                main_diag[1] * cos_phi;
+				temp4 = lower_diag[0] * cos_phi -
+					main_diag[1] * sin_phi; // 0-th elem of upper diag
+				main_diag[1] = lower_diag[0] * sin_phi +
+					main_diag[1] * cos_phi;
 
-            lower_diag[0] = temp4; // Upper diag
+				lower_diag[0] = temp4; // Upper diag
 
-            temp5 = lower_diag[1] * cos_phi; // 1-th elem of upper diag
+            	temp5 = lower_diag[1] * cos_phi; // 1-th elem of upper diag
 
-            cos_phi1 = cos_phi; sin_phi1 = sin_phi;
+				cos_phi1 = cos_phi; sin_phi1 = sin_phi;
+			} else {
+				cos_phi1 = cos_phi = 1.0;
+				sin_phi1 = sin_phi = 0.0;
+				temp5 = lower_diag[1];
+			}
 
             for(int k = 1; k <= i - 1; k++) {
-                temp2 = sqrt(SQUARE(main_diag[k]) +
-                    SQUARE(lower_diag[k]));
-                temp3 = 1 / temp2;
+				if(fabs(lower_diag[k]) >= 1e-16){
+					temp2 = sqrt(SQUARE(main_diag[k]) +
+						SQUARE(lower_diag[k]));
+					temp3 = 1 / temp2;
 
-                cos_phi = main_diag[k] * temp3;
-                sin_phi = -lower_diag[k] * temp3;
+					cos_phi = main_diag[k] * temp3;
+					sin_phi = -lower_diag[k] * temp3;
 
-                // Multiply by T(k, k + 1) from left
-                main_diag[k] = temp2;
-                temp4 = temp5 * cos_phi-
-                    main_diag[k + 1] * sin_phi;
-                main_diag[k + 1] = temp5 * sin_phi +
-                    main_diag[k + 1] * cos_phi;
-                lower_diag[k] = temp4;
+					// Multiply by T(k, k + 1) from left
+					main_diag[k] = temp2;
+					temp4 = temp5 * cos_phi-
+						main_diag[k + 1] * sin_phi;
+					main_diag[k + 1] = temp5 * sin_phi +
+						main_diag[k + 1] * cos_phi;
+					lower_diag[k] = temp4;
 
-                temp5 = lower_diag[k + 1] * cos_phi;
+					temp5 = lower_diag[k + 1] * cos_phi;
+				} else {
+					cos_phi = 1.0; sin_phi = 1.0;
+					temp5 = lower_diag[k + 1];
+				}
 
-                // Multiply by T(k - 1, k)^T from right
+                // Multiply by T(k - 1, k)* from right
                 main_diag[k - 1] = main_diag[k - 1] * cos_phi1 -
                     lower_diag[k - 1] * sin_phi1;
 
@@ -174,7 +185,7 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
 
             // Last iteration
             main_diag[i - 1] = main_diag[i - 1] * cos_phi1 - 
-                lower_diag[i] * sin_phi1;
+                lower_diag[i - 1] * sin_phi1;
             
             lower_diag[i - 1] = -main_diag[i] * sin_phi1;
             main_diag[i] = main_diag[i] * cos_phi1;
@@ -185,6 +196,7 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
             }
         }
         values[i] = main_diag[i];
+		lower_diag[i - 1] = 0.0;
     }
     // Last two eigenvalues are found as solutions of quadratic equation
     temp1 = sqrt(SQUARE(main_diag[0] - main_diag[1])

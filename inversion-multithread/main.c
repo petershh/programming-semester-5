@@ -22,13 +22,12 @@
 #include "matrixlib.h"
 
 int main(int argc, char **argv) {
-    int n, m, k;
-    double *matrix, *eigenvalues, eps;
+    int n, m, k, result;
+    double *matrix, *inverse;
     clock_t begin, end;
     int exit_code = 0;
     char *filename = NULL;
-
-    if((argc < 5) || (argc > 6)) {
+    if((argc < 4) || (argc > 5)) {
         exit_code = 1;
         goto final;
     }
@@ -40,24 +39,20 @@ int main(int argc, char **argv) {
         exit_code = 1;
         goto final;
     }
-    if(sscanf(argv[3], "%lf", &eps) != 1) {
+    if(sscanf(argv[3], "%d", &k) != 1) {
         exit_code = 1;
         goto final;
     }
-    if(sscanf(argv[4], "%d", &k) != 1) {
+    if(k < 0 || k > 4 || n < 1 || m < 1) {
         exit_code = 1;
         goto final;
     }
-    if(k < 0 || k > 4 || n < 1 || m < 1 || eps < 0.0) {
-        exit_code = 1;
-        goto final;
-    }
-    if(argc == 6) {
+    if(argc == 5) {
         if(k != 0){
             exit_code = 1;
             goto final;
         }
-        filename = argv[5];
+        filename = argv[4];
     }
 
     matrix = (double*)malloc(n * n * sizeof(double));
@@ -66,8 +61,8 @@ int main(int argc, char **argv) {
         exit_code = 2;
         goto final;
     }
-    eigenvalues = (double*)malloc(n * sizeof(double));
-    if(!eigenvalues) {
+    inverse = (double*)malloc(n * n * sizeof(double));
+    if(!inverse) {
         fprintf(stderr, "ERROR: not enough memory!");
         exit_code = 3;
         goto free_matrix;
@@ -75,7 +70,7 @@ int main(int argc, char **argv) {
 
     if(read_matrix(matrix, n, k, filename)) {
         exit_code = 4;
-        goto free_eigenvalues;
+        goto free_inverse;
     }
 
     printf("Original matrix:\n");
@@ -83,25 +78,30 @@ int main(int argc, char **argv) {
     printf("\n");
 
     begin = clock();
-    get_eigenvalues(matrix, eigenvalues, n, eps);
+    result = invert_matrix(matrix, inverse, n);
     end = clock();
 
-    printf("Eigenvalues:\n");
-    print_matrix(eigenvalues, 1, n, n);
+    if(result) {
+        fprintf(stderr, "ERROR: matrix is not invertible\n");
+        exit_code = 5;
+        goto free_inverse;
+    }
+
+    printf("Inverted matrix:\n");
+    print_matrix(inverse, n, n, m);
     printf("\n");
 
     if(read_matrix(matrix, n, k, filename)){
         exit_code = 4;
-        goto free_eigenvalues;
+        goto free_inverse;
     }
 
-    printf("Residual 1: %e\n", residual1(matrix, eigenvalues, n));
-    printf("Residual 2: %e\n", residual2(matrix, eigenvalues, n));
+    printf("Discrepancy: %e\n", discrepancy(matrix, inverse, n));
     printf("Time used to compute: %.2lf seconds\n", (double)(end - begin)
         / CLOCKS_PER_SEC);
 
-    free_eigenvalues:
-    free(eigenvalues);
+    free_inverse:
+    free(inverse);
     free_matrix:
     free(matrix);
     final:

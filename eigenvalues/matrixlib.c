@@ -23,7 +23,6 @@
 #include "common.h"
 
 int get_eigenvalues(double *matrix, double *values, int order, double eps) {
-
     double temp1, temp2, temp3, temp4, temp5;
     double cos_phi = 0.0, sin_phi = 0.0;
     double cos_phi1 = 0.0, sin_phi1 = 0.0;
@@ -215,15 +214,16 @@ double residual1(double *matrix, double *eigenvalues, int order) {
 }
 
 double residual2(double *matrix, double *eigenvalues, int order) {
-    double result = 0.0;
+    double result = 0.0, result1 = 0.0;
     for(int i = 0; i < SQUARE(order); i++) {
         result += SQUARE(matrix[i]);
     }
-    // result = sqrt(result);
+	result = sqrt(result);
     for(int i = 0; i < order; i++) {
-        result -= SQUARE(eigenvalues[i]);
+        result1 += SQUARE(eigenvalues[i]);
     }
-    return fabs(result);
+	result1 = sqrt(result1);
+    return fabs(result - result1);
 }
 
 double infinity_norm(const double *matrix, int order) {

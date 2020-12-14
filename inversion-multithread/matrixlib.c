@@ -109,7 +109,7 @@ int invert_matrix(double *matrix, double *result, int order) {
     return 0;
 }
 
-double discrepancy(double *matrix, double *result, int order) {
+double residual(double *matrix, double *result, int order) {
     double product_elem = 0.0;
     double norm_square = 0.0;
 

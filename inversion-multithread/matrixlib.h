@@ -20,4 +20,4 @@
 
 int invert_matrix(double *matrix, double *result, int order);
 
-double discrepancy(double *matrix, double *result, int order);
+double residual(double *matrix, double *result, int order);

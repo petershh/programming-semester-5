@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
         goto free_inverse;
     }
 
-    printf("Discrepancy: %e\n", discrepancy(matrix, inverse, n));
+    printf("Discrepancy: %e\n", residual(matrix, inverse, n));
     printf("Time used to compute: %.2lf seconds\n", (double)(end - begin)
         / CLOCKS_PER_SEC);
 

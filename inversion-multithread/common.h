@@ -29,3 +29,7 @@
 #define EPS 1e-16
 
 double f(int n, int k, int i, int j);
+
+void synchronize(int threads_amount);
+
+long get_thread_time(void);

@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#include <pthread.h>
+#include <sys/resource.h>
+
 #include "common.h"
 
 double f(int n, int k, int i, int j) {
@@ -29,4 +32,40 @@ double f(int n, int k, int i, int j) {
         default:
             return 0;
     }
+}
+
+void synchronize(int threads_amount) {
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    static pthread_cond_t condvar_in = PTHREAD_COND_INITIALIZER;
+    static pthread_cond_t condvar_out = PTHREAD_COND_INITIALIZER;
+    static int threads_in = 0;
+    static int threads_out = 0;
+    pthread_mutex_lock(&mutex);
+    threads_in++;
+    if(threads_in >= threads_amount) {
+        threads_out = 0;
+        pthread_cond_broadcast(&condvar_in);
+    } else {
+        while(threads_in < threads_amount) {
+            pthread_cond_wait(&condvar_in, &mutex);
+        }
+    }
+    threads_out++;
+    if(threads_out >= threads_amount) {
+        threads_in = 0;
+        pthread_cond_broadcast(&condvar_out);
+    } else {
+        while(threads_out < threads_amount) {
+			pthread_cond_wait(&condvar_out, &mutex);
+		}
+    }
+	pthread_mutex_unlock(&mutex);
+}
+
+long int get_thread_time(void) {
+	struct rusage buf;
+
+	getrusage(RUSAGE_SELF, &buf);
+
+	return buf.ru_utime.tv_sec * 100 + buf.ru_utime.tv_usec / 10000;
 }

@@ -16,6 +16,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "matrixlib.h"
 #include "common.h"
@@ -32,7 +33,7 @@ int invert_matrix(double *matrix, double *result, int order) {
     // Cast the matrix to upper triangular type
     for(int i = 0; i < order; i++) {
         s = 0.0;
-        for(int j = i + 1; j < order; j++){
+        for(int j = i + 1; j < order; j++) {
             s += SQUARE(matrix[COORD(i, j, order)]);
         }
 
@@ -88,9 +89,9 @@ int invert_matrix(double *matrix, double *result, int order) {
     for(int i = order - 1; i >= 0; i--) {
         // Divide i-th row of result by matrix[i, i]
 
-        s = matrix[COORD(i, i, order)];
+        s = 1 / matrix[COORD(i, i, order)];
         for(int j = 0; j < order; j++) {
-            result[COORD(j, i, order)] /= s;
+            result[COORD(j, i, order)] *= s;
         }
 
         // Substract i-th row of result multiplied by matrix[j, i] from
@@ -108,7 +109,7 @@ int invert_matrix(double *matrix, double *result, int order) {
     return 0;
 }
 
-double discrepancy(double *matrix, double *result, int order) {
+double residual(double *matrix, double *result, int order) {
     double product_elem = 0.0;
     double norm_square = 0.0;
 

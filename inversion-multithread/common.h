@@ -33,12 +33,3 @@ double f(int n, int k, int i, int j);
 void synchronize(int threads_amount);
 
 long get_thread_time(void);
-
-struct thread_args {
-	int thread_id;
-	int thread_amount;
-	double *matrix;
-	double *inverse_matrix;
-	int order;
-	long int *thread_time;
-};

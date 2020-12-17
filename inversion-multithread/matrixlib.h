@@ -18,6 +18,7 @@
 
 #include <pthread.h>
 
-int invert_matrix(double *matrix, double *result, int order);
+int invert_matrix(double *matrix, double *result, int order, int thread_id,
+		int threads_amount);
 
 double residual(double *matrix, double *result, int order);

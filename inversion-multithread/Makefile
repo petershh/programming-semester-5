@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+CFLAGS:=$(CFLAGS) -D_GNU_SOURCE
+
 a.out: main.o matrixio.o matrixlib.o common.o
 	gcc $^ -lm -pthread
 

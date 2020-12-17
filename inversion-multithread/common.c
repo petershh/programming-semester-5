@@ -65,7 +65,7 @@ void synchronize(int threads_amount) {
 long int get_thread_time(void) {
 	struct rusage buf;
 
-	getrusage(RUSAGE_SELF, &buf);
+	getrusage(RUSAGE_THREAD, &buf);
 
 	return buf.ru_utime.tv_sec * 100 + buf.ru_utime.tv_usec / 10000;
 }

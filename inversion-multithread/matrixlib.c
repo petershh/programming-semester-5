@@ -145,11 +145,14 @@ int invert_matrix(double *matrix, double *result, int order, int thread_id,
     return 0;
 }
 
-double residual(double *matrix, double *result, int order) {
+double residual(double *matrix, double *result, int order, int thread_id,
+				int threads_amount) {
     double product_elem = 0.0;
     double norm_square = 0.0;
+	int work_range_start = (order * thread_id) / threads_amount;
+	int work_range_end = (order * (thread_id + 1)) / threads_amount;
 
-    for(int i = 0; i < order; i++) {
+    for(int i = work_range_start; i < work_range_end; i++) {
         for(int j = 0; j < order; j++) {
             product_elem = 0.0;
             for(int k = 0; k < order; k++) {
@@ -161,5 +164,5 @@ double residual(double *matrix, double *result, int order) {
         }
     }
 
-    return sqrt(norm_square);
+    return norm_square;
 }

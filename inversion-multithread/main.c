@@ -40,8 +40,7 @@ void *thread_execute(void *p_args);
 
 int main(int argc, char **argv) {
     int n, m, k, threads_amount;
-    double *matrix, *inverse;
-    clock_t begin = 0, end = 0;
+    double *matrix, *inverse, residual_value;
     int exit_code = 0;
     char *filename = NULL;
 	struct thread_args *args;
@@ -124,7 +123,6 @@ int main(int argc, char **argv) {
     print_matrix(matrix, n, n, m);
     printf("\n");
 
-	begin = clock();
 
 	for(int i = 0; i < threads_amount; i++) {
 		if(pthread_create(threads + i, NULL, thread_execute, args + i)) {
@@ -137,7 +135,6 @@ int main(int argc, char **argv) {
 	for(int i = 0; i < threads_amount; i++) {
 		pthread_join(threads[i], NULL);
 	}
-	end = clock();
 
     if(inversion_result) {
         fprintf(stderr, "ERROR: matrix is not invertible\n");
@@ -155,8 +152,6 @@ int main(int argc, char **argv) {
     }
 
     printf("Residual: %e\n", residual(matrix, inverse, n));
-    printf("Time used to compute: %.2lf seconds (from clock())\n",
-			(double)(end - begin) / CLOCKS_PER_SEC);
 	printf("Total threads time: %.2lf seconds\n",
 			(double)thread_total_time / 100);
 	printf("Average threads time: %.2lf seconds\n",

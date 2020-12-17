@@ -21,4 +21,5 @@
 int invert_matrix(double *matrix, double *result, int order, int thread_id,
 		int threads_amount);
 
-double residual(double *matrix, double *result, int order);
+double residual(double *matrix, double *result, int order, int thread_id,
+		int threads_amount);

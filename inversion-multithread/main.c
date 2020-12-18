@@ -17,15 +17,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 #include <pthread.h>
 
 #include "common.h"
 #include "matrixio.h"
 #include "matrixlib.h"
 
+
 pthread_mutex_t total_time_mutex = PTHREAD_MUTEX_INITIALIZER;
 long int thread_total_time = 0L;
 int inversion_result = 0;
+
+pthread_mutex_t read_matrix_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t read_matrix_condvar = PTHREAD_COND_INITIALIZER;
 
 struct thread_args {
 	int thread_id;
@@ -33,7 +38,7 @@ struct thread_args {
 	double *matrix;
 	double *inverse_matrix;
 	int order;
-	int thread_result;
+	double residual_part;
 };
 
 void *thread_execute(void *p_args);
@@ -123,7 +128,6 @@ int main(int argc, char **argv) {
     print_matrix(matrix, n, n, m);
     printf("\n");
 
-
 	for(int i = 0; i < threads_amount; i++) {
 		if(pthread_create(threads + i, NULL, thread_execute, args + i)) {
 			fprintf(stderr, "ERROR: Cannot create threads!\n");
@@ -132,9 +136,9 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	for(int i = 0; i < threads_amount; i++) {
-		pthread_join(threads[i], NULL);
-	}
+	pthread_mutex_lock(&read_matrix_mutex);
+	pthread_cond_wait(&read_matrix_condvar, &read_matrix_mutex);
+	pthread_mutex_unlock(&read_matrix_mutex);
 
     if(inversion_result) {
         fprintf(stderr, "ERROR: matrix is not invertible\n");
@@ -151,7 +155,15 @@ int main(int argc, char **argv) {
         goto free_args;
     }
 
-    printf("Residual: %e\n", residual(matrix, inverse, n));
+	pthread_cond_broadcast(&read_matrix_condvar);
+
+	for(int i = 0; i < threads_amount; i++) {
+		pthread_join(threads[i], NULL);
+		fprintf(stderr, "kek\n");
+		residual_value += args[i].residual_part;
+	}
+
+    printf("Residual: %e\n", sqrt(residual_value));
 	printf("Total threads time: %.2lf seconds\n",
 			(double)thread_total_time / 100);
 	printf("Average threads time: %.2lf seconds\n",
@@ -171,14 +183,32 @@ int main(int argc, char **argv) {
 
 void *thread_execute(void *p_args) {
 	long int start_time, finish_time;
+	int result;
 	struct thread_args *args = (struct thread_args*)p_args;
 
 	start_time = get_thread_time();
-	args->thread_result  = invert_matrix(args->matrix, args->inverse_matrix, args->order,
+	result = invert_matrix(args->matrix, args->inverse_matrix, args->order,
 			args->thread_id, args->threads_amount);
 	finish_time = get_thread_time();
+
 	pthread_mutex_lock(&total_time_mutex);
 	thread_total_time += (finish_time - start_time);
+	inversion_result = inversion_result | result;
+
+	if(args->thread_id == 0) {
+		pthread_cond_signal(&read_matrix_condvar);
+	}
 	pthread_mutex_unlock(&total_time_mutex);
+
+	if(result) {
+		return NULL;
+	}
+	
+	pthread_mutex_lock(&read_matrix_mutex);
+	pthread_cond_wait(&read_matrix_condvar, &read_matrix_mutex);
+	pthread_mutex_unlock(&read_matrix_mutex);
+	args->residual_part = residual(args->matrix, args->inverse_matrix,
+			args->order, args->thread_id, args->threads_amount);
+
 	return NULL;
 }

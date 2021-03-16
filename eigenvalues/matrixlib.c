@@ -35,70 +35,30 @@ int get_eigenvalues(double *matrix, double *values, int order, double eps) {
     
     // Cast to three-diagonal type
     for(int i = 0; i < order - 2; i++) {
-        // Working with vector (matrix[i, i + 1], ..., matrix[i, order])
-        for(int j = i + 2; j < order; j++) {
-            if(fabs(matrix[COORD(i, j, order)]) < 1e-16) {
-                continue;
-            }
+		temp1 = 0.0;
+		for(int j = i + 2; j < order; j++) {
+			temp1 += SQUARE(matrix[COORD(j, i, order)]);
+		}
 
-            // Prepare matrix of rotation T = T(i + 1, j)
-            temp1 = sqrt(SQUARE(matrix[COORD(i + 1, i, order)]) +
-                SQUARE(matrix[COORD(i, j, order)]));
-            temp2 = 1 / temp1;
-            cos_phi = matrix[COORD(i + 1, i, order)] * temp2;
-            sin_phi = -matrix[COORD(i, j, order)] * temp2;
+		if(temp1 < 1e-16) {
+			continue;
+		}
 
-            // We know what will happen with i-th column and i-th row
-            // after multiplication
-            matrix[COORD(i, i + 1, order)] = temp1;
-            matrix[COORD(i + 1, i, order)] = temp1;
-            matrix[COORD(i, j, order)] = 0.0;
-            matrix[COORD(j, i, order)] = 0.0;
+		temp2 = sqrt(matrix[COORD(i + 1, i, order)] + temp1);
 
+		matrix[COORD(i + 1, i, order)] -= temp2;
 
-            // Multiply matrix by T from left
-            for(int k = i + 1; k < order; k++) {
-                // We need to preserve matrix[k, i + 1] value
-                temp1 =
-                    matrix[COORD(i + 1, k, order)] * cos_phi -
-                    matrix[COORD(j, k, order)] * sin_phi;
-                matrix[COORD(j, k, order)] = 
-                    matrix[COORD(i + 1, k, order)] * sin_phi +
-                    matrix[COORD(j, k, order)] * cos_phi;
-                matrix[COORD(i + 1, k, order)] = temp1;
-            }
+		temp3 = SQUARE(matrix[COORD(i + 1, i, order)]) + temp2;
 
+		temp3 = 2.0 / temp3;
 
-            // "Multiply" matrix by T* from right
-            // As stated in lemma 14.2.1 of The Book, we have only to
-            // compute four elements, others can be relocated
-            temp1 = 
-                matrix[COORD(i + 1, i + 1, order)] * cos_phi-
-                matrix[COORD(i + 1, j, order)] * sin_phi;
-            temp2 = 
-                matrix[COORD(i + 1, i + 1, order)] * sin_phi +
-                matrix[COORD(i + 1, j, order)] * cos_phi;
-            matrix[COORD(j, j, order)] = 
-                matrix[COORD(j, i + 1, order)] * sin_phi +
-                matrix[COORD(j, j, order)] * cos_phi;
-            matrix[COORD(i + 1, i + 1, order)] = temp1;
-            matrix[COORD(i + 1, j, order)] = temp2;
-            matrix[COORD(j, i + 1, order)] = temp2;
+		// Vector of reflection is ready, now we multiply
+		
+		for(int j = i + 1; j < order; j++) {
+			temp1 = 0.0;
+			// To be continued
+		}
 
-			for(int k = i + 2; k < j; k++) {
-				matrix[COORD(k, i + 1, order)] =
-					matrix[COORD(i + 1, k, order)];
-				matrix[COORD(k, j, order)] =
-					matrix[COORD(j, k, order)];
-			}
-
-			for(int k = j + 1; k < order; k++) {
-				matrix[COORD(k, i + 1, order)] =
-					matrix[COORD(i + 1, k, order)];
-				matrix[COORD(k, j, order)] =
-					matrix[COORD(j, k, order)];
-			}
-        }
     }
 
     // relocate elements for easier code and speed

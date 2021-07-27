@@ -17,6 +17,6 @@
 #pragma once
 
 int read_matrix(double *matrix, int order, int formula_number,
-    char *filename);
+	char *filename);
 
 void print_matrix(double *matrix, int height, int width, int max_cols_rows);

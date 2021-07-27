@@ -17,16 +17,16 @@
 #include "common.h"
 
 double f(int n, int k, int i, int j) {
-        switch (k) {
-        case 1:
-            return n - MAX(i, j) + 1;
-        case 2:
-            return MAX(i, j);
-        case 3:
-            return ABS(i - j);
-        case 4:
-            return 1.0/(double)(i + j - 1);
-        default:
-            return 0;
-    }
+		switch (k) {
+		case 1:
+			return n - MAX(i, j) + 1;
+		case 2:
+			return MAX(i, j);
+		case 3:
+			return ABS(i - j);
+		case 4:
+			return 1.0/(double)(i + j - 1);
+		default:
+			return 0;
+	}
 }

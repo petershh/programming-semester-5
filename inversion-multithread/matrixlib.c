@@ -24,12 +24,12 @@
 
 int invert_matrix(double *matrix, double *result, int order, int thread_id,
 					int threads_amount) {
-    double s, norm1, norm2, tmp;
+	double s, norm1, norm2, tmp;
 	int work_range_start, work_range_end;
 
 	synchronize(threads_amount);
 
-    // Generate the identity matrix
+	// Generate the identity matrix
 	
 	if(thread_id == 0) {
 		memset(result, 0, (size_t)order * order * sizeof(double));
@@ -38,8 +38,8 @@ int invert_matrix(double *matrix, double *result, int order, int thread_id,
 	}
 	
 	synchronize(threads_amount);
-    // Cast the matrix to upper triangular type
-    for(int i = 0; i < order; i++) {
+	// Cast the matrix to upper triangular type
+	for(int i = 0; i < order; i++) {
 		s = 0.0;
 		for(int j = i + 1; j < order; j++) {
 			s += SQUARE(matrix[COORD(i, j, order)]);
@@ -67,7 +67,7 @@ int invert_matrix(double *matrix, double *result, int order, int thread_id,
 			}
 		}
 
-        // Vector of reflection is ready, now we need to operate on matrices
+		// Vector of reflection is ready, now we need to operate on matrices
 		synchronize(threads_amount);
 
 		work_range_start = ((order - i - 1) * thread_id) / threads_amount +
@@ -75,44 +75,44 @@ int invert_matrix(double *matrix, double *result, int order, int thread_id,
 		work_range_end = ((order - i - 1) * (thread_id + 1)) / threads_amount +
 		   	i + 1;
 
-        for(int j = work_range_start; j < work_range_end; j++) {
-            s = 0.0;
-            for(int k = i; k < order; k++) {
-                s += matrix[COORD(i, k, order)] * matrix[COORD(j, k, order)];
-            }
+		for(int j = work_range_start; j < work_range_end; j++) {
+			s = 0.0;
+			for(int k = i; k < order; k++) {
+				s += matrix[COORD(i, k, order)] * matrix[COORD(j, k, order)];
+			}
 
 			s *= 2.0;
-            for(int k = i; k < order; k++) {
-                matrix[COORD(j, k, order)] -= s * matrix[COORD(i, k, order)];
-            }
-        }
+			for(int k = i; k < order; k++) {
+				matrix[COORD(j, k, order)] -= s * matrix[COORD(i, k, order)];
+			}
+		}
 
 		work_range_start = (order * thread_id) / threads_amount;
 		work_range_end = (order * (thread_id + 1)) / threads_amount;
 
-        for(int j = work_range_start; j < work_range_end; j++) {
-            s = 0.0;
-            for(int k = i; k < order; k++) {
-                s += matrix[COORD(i, k, order)] * result[COORD(j, k, order)];
-            }
+		for(int j = work_range_start; j < work_range_end; j++) {
+			s = 0.0;
+			for(int k = i; k < order; k++) {
+				s += matrix[COORD(i, k, order)] * result[COORD(j, k, order)];
+			}
 
-            s *= 2.0;
-            for(int k = i; k < order; k++) {
-                result[COORD(j, k, order)] -= s * matrix[COORD(i, k, order)];
-            }
-        }
+			s *= 2.0;
+			for(int k = i; k < order; k++) {
+				result[COORD(j, k, order)] -= s * matrix[COORD(i, k, order)];
+			}
+		}
 
 		synchronize(threads_amount);
 
-        // Finalize: set the i-th subcolumn of matrix
+		// Finalize: set the i-th subcolumn of matrix
 		if(thread_id == 0) {
-	        matrix[COORD(i, i, order)] = norm1;
+			matrix[COORD(i, i, order)] = norm1;
 		}
-    }
+	}
 
-    // Back substitution of Gaussian method
-    // We know that the matrix is inversible at the moment
-    // Note: no action is required on matrix
+	// Back substitution of Gaussian method
+	// We know that the matrix is inversible at the moment
+	// Note: no action is required on matrix
 
 	for(int i = order - 1; i >= 0; i--) {
 		// Divide i-th row of result by matrix[i, i]
@@ -141,28 +141,28 @@ int invert_matrix(double *matrix, double *result, int order, int thread_id,
 		synchronize(threads_amount);
 	}
 
-    // And... here we go
-    return 0;
+	// And... here we go
+	return 0;
 }
 
 double residual(double *matrix, double *result, int order, int thread_id,
 				int threads_amount) {
-    double product_elem = 0.0;
-    double norm_square = 0.0;
+	double product_elem = 0.0;
+	double norm_square = 0.0;
 	int work_range_start = (order * thread_id) / threads_amount;
 	int work_range_end = (order * (thread_id + 1)) / threads_amount;
 
-    for(int i = work_range_start; i < work_range_end; i++) {
-        for(int j = 0; j < order; j++) {
-            product_elem = 0.0;
-            for(int k = 0; k < order; k++) {
-                product_elem += matrix[COORD(k, i, order)] *
-                    result[COORD(j, k, order)];
-            }
+	for(int i = work_range_start; i < work_range_end; i++) {
+		for(int j = 0; j < order; j++) {
+			product_elem = 0.0;
+			for(int k = 0; k < order; k++) {
+				product_elem += matrix[COORD(k, i, order)] *
+					result[COORD(j, k, order)];
+			}
 
-            norm_square += SQUARE(product_elem - (double)(i == j));
-        }
-    }
+			norm_square += SQUARE(product_elem - (double)(i == j));
+		}
+	}
 
-    return norm_square;
+	return norm_square;
 }

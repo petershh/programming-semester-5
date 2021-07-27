@@ -20,45 +20,45 @@
 #include "common.h"
 
 double f(int n, int k, int i, int j) {
-        switch (k) {
-        case 1:
-            return n - MAX(i, j) + 1;
-        case 2:
-            return MAX(i, j);
-        case 3:
-            return ABS(i - j);
-        case 4:
-            return 1.0/(double)(i + j - 1);
-        default:
-            return 0;
-    }
+		switch (k) {
+		case 1:
+			return n - MAX(i, j) + 1;
+		case 2:
+			return MAX(i, j);
+		case 3:
+			return ABS(i - j);
+		case 4:
+			return 1.0/(double)(i + j - 1);
+		default:
+			return 0;
+	}
 }
 
 void synchronize(int threads_amount) {
-    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-    static pthread_cond_t condvar_in = PTHREAD_COND_INITIALIZER;
-    static pthread_cond_t condvar_out = PTHREAD_COND_INITIALIZER;
-    static int threads_in = 0;
-    static int threads_out = 0;
-    pthread_mutex_lock(&mutex);
-    threads_in++;
-    if(threads_in >= threads_amount) {
-        threads_out = 0;
-        pthread_cond_broadcast(&condvar_in);
-    } else {
-        while(threads_in < threads_amount) {
-            pthread_cond_wait(&condvar_in, &mutex);
-        }
-    }
-    threads_out++;
-    if(threads_out >= threads_amount) {
-        threads_in = 0;
-        pthread_cond_broadcast(&condvar_out);
-    } else {
-        while(threads_out < threads_amount) {
+	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+	static pthread_cond_t condvar_in = PTHREAD_COND_INITIALIZER;
+	static pthread_cond_t condvar_out = PTHREAD_COND_INITIALIZER;
+	static int threads_in = 0;
+	static int threads_out = 0;
+	pthread_mutex_lock(&mutex);
+	threads_in++;
+	if(threads_in >= threads_amount) {
+		threads_out = 0;
+		pthread_cond_broadcast(&condvar_in);
+	} else {
+		while(threads_in < threads_amount) {
+			pthread_cond_wait(&condvar_in, &mutex);
+		}
+	}
+	threads_out++;
+	if(threads_out >= threads_amount) {
+		threads_in = 0;
+		pthread_cond_broadcast(&condvar_out);
+	} else {
+		while(threads_out < threads_amount) {
 			pthread_cond_wait(&condvar_out, &mutex);
 		}
-    }
+	}
 	pthread_mutex_unlock(&mutex);
 }
 

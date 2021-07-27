@@ -17,21 +17,21 @@
 #include "common.h"
 
 double f(int n, int k, int i, int j) {
-        switch (k) {
-        case 1:
-            return n - MAX(i, j) + 1;
-        case 2:
-            return (ABS(i - j) > 1 ? 0 : 2 - 3 * ABS(i - j));
-        case 3:
-            {
-                if(i == j && i < n) return 1;
-                if(j == n) return i;
-                if(i == n) return j;
-                else return 0;
-            }
-        case 4:
-            return 1.0/(double)(i + j - 1);
-        default:
-            return 0;
-    }
+		switch (k) {
+		case 1:
+			return n - MAX(i, j) + 1;
+		case 2:
+			return (ABS(i - j) > 1 ? 0 : 2 - 3 * ABS(i - j));
+		case 3:
+			{
+				if(i == j && i < n) return 1;
+				if(j == n) return i;
+				if(i == n) return j;
+				else return 0;
+			}
+		case 4:
+			return 1.0/(double)(i + j - 1);
+		default:
+			return 0;
+	}
 }

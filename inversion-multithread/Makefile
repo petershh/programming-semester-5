@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
-CFLAGS:=$(CFLAGS) -D_GNU_SOURCE
+CFLAGS:=$(CFLAGS)
 
 a.out: main.o matrixio.o matrixlib.o common.o
-	gcc $^ -lm -pthread
+	cc $^ -lm -pthread
 
 %.o: %.c
-	gcc -c $^ $(CFLAGS) -o $@
+	cc -c $^ $(CFLAGS) -o $@
 
 .PHONY: clean
 
